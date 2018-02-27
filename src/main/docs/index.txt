@@ -1,0 +1,15 @@
+索引
+
+1.用户user
+db.user.ensureIndex({point:-1},{background:true})
+db.user.ensureIndex({phone:1,thirdType:1,openId:1,unionId:1,nickname:1},{background:true})
+
+2.登录日志loginLog
+db.loginLog.ensureIndex({userId:-1,day:-1,status:1},{background:true})
+
+
+3.短信发送日志smsLog
+db.smsLog.ensureIndex({phoneNo:1,code:1},{background:true})
+
+4.签到日至signLog
+db.signLog.ensureIndex({userId:1,day:-1},{background:true})

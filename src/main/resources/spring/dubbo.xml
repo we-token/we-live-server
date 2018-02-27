@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 提供方应用信息，用于计算依赖关系 -->
+	<dubbo:application name="${dubbo.application}" />
+	<!-- <dubbo:registry address="redis://192.168.1.112:6379" /> -->
+	<dubbo:registry address="${dubbo.registry.address}" />
+
+
+	<!-- 用dubbo协议在9527端口暴露服务 -->
+	<dubbo:protocol name="dubbo" port="9527" />
+
+	<!-- 声明需要暴露的服务接口 -->
+	<dubbo:service interface="com.zb.dubbo.RpcUserService"
+		ref="rpcUserService" />
+	<bean id="rpcUserService" class="com.zb.dubbo.impl.RpcUserServiceImpl" />
+
+	<dubbo:service interface="com.zb.dubbo.RpcSysService"
+		ref="rpcSysService" />
+	<bean id="rpcSysService" class="com.zb.dubbo.impl.RpcSysServiceImpl" />	
+</beans>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+http://www.springframework.org/schema/jee
+http://www.springframework.org/schema/jee/spring-jee-4.1.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.1.xsd
+http://www.springframework.org/schema/schema/util
+http://www.springframework.org/schema/schema/util/spring-util-4.1.xsd
+http://www.springframework.org/schema/data/mongo
+http://www.springframework.org/schema/data/mongo/spring-mongo-1.5.xsd 
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-4.1.xsd ">
+
+	<bean id="contextHolder" class="com.zb.core.spring.SpringContextHolder"
+		lazy-init="false" />
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- maxUploadSize:文件上传的最大值以byte为单位 -->
+		<property name="maxUploadSize" value="1024000"></property>
+	</bean>
+
+	<context:property-placeholder location="classpath:spring/app.conf" />
+
+	<context:annotation-config />
+
+	<context:component-scan base-package="show.we" />
+
+	<aop:aspectj-autoproxy />
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+
+	<!-- mongo config -->
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongo" ref="mongo" />
+		<constructor-arg name="databaseName" value="${mongo.dbname}" />
+	</bean>
+
+	<!-- 这里需要指定一个Mongo URI来连接数据库，需要的信息可以从阿里云控制台上获取，连接是帐号密码要跟帐号所在的数据库对应起来，否则无法通过认证，默认创建的root帐号是admin数据库下的 -->
+	<bean class="com.mongodb.MongoURI" id="mongoURI">
+		<constructor-arg value="${mongo.uri}" />
+	</bean>
+
+	<bean class="com.mongodb.Mongo" id="mongo">
+		<constructor-arg ref="mongoURI" />
+	</bean>
+
+	<!-- redis config -->
+
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig"
+		p:maxTotal="${redis.maxActive}" p:maxIdle="${redis.maxIdle}"
+		p:maxWaitMillis="${redis.maxWait}" p:testOnBorrow="${redis.testOnBorrow}"
+		p:testOnReturn="${redis.testOnReturn}" />
+
+	<bean id="jedisConnFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+		p:use-pool="true" p:host-name="${redis.host}" p:port="${redis.port}"
+		p:pool-config-ref="jedisPoolConfig" />
+
+	<!-- redis template definition -->
+	<!-- <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate" -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate"
+		p:connection-factory-ref="jedisConnFactory">
+	</bean>
+
+	<!--接收聊天消息监听器 -->
+	<bean id="serialization"
+		class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+
+	<bean id="redisRecvListener" class="com.zb.core.redis.RedisRecvListener" />
+	<bean id="redisRecvServiceListenerAdapter"
+		class="org.springframework.data.redis.listener.adapter.MessageListenerAdapter">
+		<property name="delegate" ref="redisRecvListener" />
+		<property name="serializer" ref="serialization" />
+	</bean>
+
+	<!-- 
+	<import resource="dubbo.xml" />
+ -->
+</beans>
