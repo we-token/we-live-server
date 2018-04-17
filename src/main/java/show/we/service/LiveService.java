@@ -1,5 +1,6 @@
 package show.we.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.zb.common.Constant.ReCode;
@@ -9,6 +10,8 @@ import com.zb.core.conf.Config;
 import com.zb.core.web.ReMsg;
 import com.zb.service.BaseService;
 
+import show.we.live.RoomService;
+
 
 @Service
 public class LiveService extends BaseService{
@@ -16,6 +19,9 @@ public class LiveService extends BaseService{
 	private static final String PUSH_STREAM_DOMAIN = "rtmp://video-center-sg.alivecdn.com";
 	
 	private static final String PULL_STREAM_DOMAIN = "live.zhuangdianbi.com";
+	
+	@Autowired
+	RoomService roomService;
 	
 	public ReMsg getPushStreamUrl(){
 		long uid = super.getUid();
@@ -37,8 +43,10 @@ public class LiveService extends BaseService{
 	}
 	
 	private boolean validUpUser(Long uid){
-		//TODO 验证用户是否开通直播权限
-		return true;
+		if(ReCode.OK.reCode()==roomService.validRoom(uid).reCode()){
+			return true;
+		}
+		return false;
 	}
 	
 	private String getStreamUrl(boolean center ,long uid){
