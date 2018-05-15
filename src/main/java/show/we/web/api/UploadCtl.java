@@ -115,6 +115,8 @@ public class UploadCtl extends BaseCtl {
 	
 	private String allowSuffix = "jpg,png,gif,jpeg";// 允许文件格式
 	private String allowAudioSuffix = "acc";// 允许音频格式   // XXX
+	
+	private String allowVideoSuffix = "mp4";// 允许音频格式   // XXX
 	private long allowSize = 2L;// 允许文件大小
 	private String fileName;
 	private String[] fileNames;
@@ -272,12 +274,7 @@ public class UploadCtl extends BaseCtl {
 		return fileUrl;
 	}
 
-	public static void main(String[] args) {
-		System.out.println(simpleFilename());
-		System.out.println(simpleFilename());
-		System.out.println(simpleFilename());
-	}
-	
+
 	
 	/** 上传音频 */
 	@ResponseBody
@@ -294,6 +291,27 @@ public class UploadCtl extends BaseCtl {
 				throw new Exception("您上传的文件大小已经超出范围");
 			}
 			return storageService.uploadAudio(file, request, response);
+		} catch (Exception e) {
+			log.error("Upload", e);
+			return new ReMsg(ReCode.FAIL);
+		}
+	}
+	
+	/** 上传音频 */
+	@ResponseBody
+	@RequestMapping("/uploadVideo")
+	public ReMsg uploadVideo(@RequestParam MultipartFile file, HttpServletRequest request,
+			HttpServletResponse response) {
+		try {
+			String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1)
+					.toLowerCase();
+			if (!allowVideoSuffix.contains(suffix)) {
+				throw new Exception("请上传允许格式的文件");
+			}
+			if (file.getSize() > 10240) { // FIXME
+				throw new Exception("您上传的文件大小已经超出范围");
+			}
+			return storageService.uploadVideo(file, request, response);
 		} catch (Exception e) {
 			log.error("Upload", e);
 			return new ReMsg(ReCode.FAIL);
